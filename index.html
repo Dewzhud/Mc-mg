@@ -95,6 +95,7 @@
         <option value="forge">Forge</option>
         <option value="spigot">Spigot</option>
         <option value="paper">Paper</option>
+        <option value="mohist">Mohist</option>
       </select>
     </div>
   </div>
@@ -118,15 +119,21 @@
 </div>
 
 <script>
-  function connectToServer() {
+  async function connectToServer() {
     const ip = document.getElementById('ip-address').value;
     const port = document.getElementById('port').value;
     const version = document.getElementById('version').value;
     const platform = document.getElementById('platform').value;
-    const serverName = 'My Server';
 
-    const connectUrl = `minecraft://${ip}:${port}/${version}/${platform}/${serverName}`;
-    alert(`Connecting to server at: ${connectUrl}`);
+    const connectUrl = `http://yourapiendpoint/connect?ip=${ip}&port=${port}&version=${version}&platform=${platform}`;
+    
+    try {
+      const response = await fetch(connectUrl, { method: 'POST' });
+      const result = await response.json();
+      alert(`Server response: ${result.message}`);
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+    }
   }
 
   function showFileList() {
@@ -134,24 +141,37 @@
     fileContentDiv.style.display = 'block';
   }
 
-  function loadFileContent() {
+  async function loadFileContent() {
     const fileName = document.getElementById('file-select').value;
-    // Here you would load the file content from your server
-    // This example just provides static content
-    const fileContent = {
-      'server.properties': 'Example content of server.properties',
-      'whitelist.json': '[\n  {"uuid": "player-uuid", "name": "player-name"}\n]',
-      'ops.json': '[\n  {"uuid": "player-uuid", "name": "player-name", "level": 4}\n]'
-    };
-    document.getElementById('file-textarea').value = fileContent[fileName] || '';
+    const loadUrl = `http://yourapiendpoint/load?file=${fileName}`;
+    
+    try {
+      const response = await fetch(loadUrl);
+      const result = await response.json();
+      document.getElementById('file-textarea').value = result.content;
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+    }
   }
 
-  function saveFile() {
+  async function saveFile() {
     const fileName = document.getElementById('file-select').value;
     const fileContent = document.getElementById('file-textarea').value;
-    // Here you would save the file content to your server
-    // This example just shows an alert
-    alert(`File ${fileName} saved with content:\n${fileContent}`);
+    const saveUrl = `http://yourapiendpoint/save?file=${fileName}`;
+
+    try {
+      const response = await fetch(saveUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ content: fileContent })
+      });
+      const result = await response.json();
+      alert(`Server response: ${result.message}`);
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+    }
   }
 </script>
 
