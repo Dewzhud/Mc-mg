@@ -3,52 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Server Control Panel</title>
+    <title>Chicken Shop</title>
     <style>
-        #console {
-            width: 100%;
-            height: 300px;
-            background-color: #000;
-            color: #fff;
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        input, button {
+            margin: 10px 0;
             padding: 10px;
-            overflow-y: auto;
-            font-family: monospace;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .popup {
+            display: none;
+            background-color: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
         }
     </style>
-    <script>
-        async function sendCommand(command) {
-            // ส่งคำสั่งไปยังเซิร์ฟเวอร์ backend
-        }
-
-        function startServer() {
-            // เรียกฟังก์ชันส่งคำสั่ง start
-        }
-
-        function stopServer() {
-            // เรียกฟังก์ชันส่งคำสั่ง stop
-        }
-
-        function updateConsole(message) {
-            // อัพเดท Console
-        }
-
-        window.onload = function() {
-            // อัพเดท Console เมื่อหน้าเว็บโหลด
-        };
-    </script>
 </head>
 <body>
-    <h1>Minecraft Server Control Panel</h1>
-    <form>
-        <label for="ip">Server IP:</label>
-        <input type="text" id="ip" name="ip"><br><br>
-        <label for="version">Version:</label>
-        <input type="text" id="version" name="version"><br><br>
-        <label for="software">Software:</label>
-        <input type="text" id="software" name="software"><br><br>
-        <button type="button" onclick="startServer()">Start Server</button>
-        <button type="button" onclick="stopServer()">Stop Server</button>
-    </form>
-    <div id="console"></div>
+
+<div class="container">
+    <h2>Chicken Shop</h2>
+
+    <!-- Input Field for Redeem Code -->
+    <input type="text" id="redeemCode" placeholder="Enter redeem code"><br>
+
+    <!-- Redeem Button -->
+    <button onclick="redeemCode()">Redeem</button>
+
+    <!-- Order Button -->
+    <button onclick="orderChicken()" id="orderButton" style="display:none;">Order Chicken</button>
+
+    <!-- Popup -->
+    <div id="popup" class="popup">
+        Redeem Success
+    </div>
+
+    <!-- Order History -->
+    <div id="orderHistory" style="display:none;">
+        <h3>Order History</h3>
+        <ul id="historyList"></ul>
+    </div>
+</div>
+
+<script>
+let orderHistory = [];
+
+function redeemCode() {
+    const redeemCode = document.getElementById("redeemCode").value;
+    if (redeemCode === "Hello" || redeemCode === "Hello2") {
+        document.getElementById("popup").style.display = "block";
+        document.getElementById("orderButton").style.display = "block";
+        setTimeout(() => {
+            document.getElementById("popup").style.display = "none";
+        }, 2000);
+    } else {
+        alert("Invalid Redeem Code");
+    }
+}
+
+function orderChicken() {
+    const redeemCode = document.getElementById("redeemCode").value;
+    const orderDetails = `Chicken Order: ${new Date().toLocaleString()}`;
+    orderHistory.push(orderDetails);
+    updateOrderHistory();
+
+    // Send order details to Discord webhook
+    sendDiscordWebhook(redeemCode, orderDetails);
+}
+
+function updateOrderHistory() {
+    const historyList = document.getElementById("historyList");
+    historyList.innerHTML = "";
+    orderHistory.forEach(order => {
+        const listItem = document.createElement("li");
+        listItem.textContent = order;
+        historyList.appendChild(listItem);
+    });
+    document.getElementById("orderHistory").style.display = "block";
+}
+
+function sendDiscordWebhook(redeemCode, orderDetails) {
+    const webhookURL = 'YOUR_DISCORD_WEBHOOK_URL';
+
+    const data = {
+        content: "New order received!",
+        embeds: [{
+            title: "Order Details",
+            fields: [
+                { name: "Redeem Code", value: redeemCode },
+                { name: "Order Details", value: orderDetails }
+            ],
+            color: 3447003
+        }]
+    };
+
+    fetch(webhookURL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => console.log('Webhook sent successfully.'))
+    .catch(error => console.error('Error sending webhook:', error));
+}
+</script>
+
 </body>
 </html>
